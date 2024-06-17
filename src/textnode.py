@@ -1,5 +1,6 @@
 from htmlnode import * 
 
+
 type_text = "text"
 type_link = "link"
 type_image = "image"
@@ -40,4 +41,5 @@ def text_node_to_html_node(text_node : TextNode) -> HTMLNode:
 
     raise TypeError(f"Text node of type {text_node.text_type} can't be converted \
             to html")
+
 

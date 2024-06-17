@@ -1,6 +1,17 @@
 import re
-from textnode import TextNode
+from textnode import (
+        TextNode,
+        type_text,
+        type_link,
+        type_bold,
+        type_code,
+        type_image,
+        type_italic
+        )
 
+delimiter_bold = "**"
+delimiter_italic = "*"
+delimiter_code = "`"
 
 _imre = re.compile(r"!\[(.*?)\]\((.*?)\)")
 _linkre = re.compile(r"(?<!!)\[(.*?)\]\((.*?)\)")
@@ -22,7 +33,7 @@ def split_nodes_delimiter(old_nodes,delimiter,text_type):
     if len(old_nodes)==0:
         raise ValueError("No nodes passed in 'split_nodes_delimiter'")
     for old in old_nodes:
-        if old.text_type!="text":
+        if old.text_type!=type_text:
             new_nodes.append(old)
             continue
         split = old.text.split(delimiter)
@@ -35,7 +46,7 @@ def split_nodes_delimiter(old_nodes,delimiter,text_type):
             if i%2==1:
                 new_nodes.append(TextNode(text=split[i],text_type=text_type))
             else:
-                new_nodes.append(TextNode(text=split[i],text_type="text"))
+                new_nodes.append(TextNode(text=split[i],text_type=type_text))
 
         
     return new_nodes 
@@ -49,19 +60,20 @@ def split_nodes_image(nodes):
             continue
         matches = extract_markdown_images(node.text)
 #        print("MATCHES :: ",matches)
-        if not matches:
+        if not matches or node.text_type != type_text:
             result.append(node)
+            continue
         current = node.text 
         for m in matches:
             split_text = current.split(f"![{m[0]}]({m[1]})",1)
             if not split_text[0]:
-                result.append(TextNode(m[0],text_type="image",url=m[1]))
+                result.append(TextNode(m[0],text_type=type_image,url=m[1]))
             else:
-                result.append(TextNode(split_text[0],text_type="text"))
-                result.append(TextNode(m[0],text_type="image",url=m[1]))
+                result.append(TextNode(split_text[0],text_type=type_text))
+                result.append(TextNode(m[0],text_type=type_image,url=m[1]))
             current = split_text[1]
         if current:    
-            result.append(TextNode(current,text_type="text"))
+            result.append(TextNode(current,text_type=type_text))
 
     return result
 
@@ -73,18 +85,30 @@ def split_nodes_link(nodes):
         if not node.text:
             continue
         matches = extract_markdown_links(node.text)
-        if not matches:
+        if not matches or node.text_type != type_text:
             result.append(node)
+            continue
         current = node.text 
         for m in matches:
             split_text = current.split(f"[{m[0]}]({m[1]})",1)
             if not split_text[0]:
-                result.append(TextNode(m[0],text_type="link",url=m[1]))
+                result.append(TextNode(m[0],text_type=type_link,url=m[1]))
             else:
-                result.append(TextNode(split_text[0],text_type="text"))
-                result.append(TextNode(m[0],text_type="link",url=m[1]))
+                result.append(TextNode(split_text[0],text_type=type_text))
+                result.append(TextNode(m[0],text_type=type_link,url=m[1]))
             current = split_text[1]
         if current:    
-            result.append(TextNode(current,text_type="text"))
+            result.append(TextNode(current,text_type=type_link))
 
     return result
+def text_to_text_node(text):
+    nodes = [TextNode(text,type_text)]
+    if delimiter_bold in text:
+        nodes =split_nodes_delimiter(nodes,delimiter_bold,type_bold) 
+    if delimiter_italic in text:
+        nodes = split_nodes_delimiter(nodes,delimiter_italic,type_italic)
+    if delimiter_code in text:
+        nodes = split_nodes_delimiter(nodes,delimiter_code,type_code)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    return nodes
