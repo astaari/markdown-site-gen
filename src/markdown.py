@@ -98,7 +98,7 @@ def split_nodes_link(nodes):
                 result.append(TextNode(m[0],text_type=type_link,url=m[1]))
             current = split_text[1]
         if current:    
-            result.append(TextNode(current,text_type=type_link))
+            result.append(TextNode(current,text_type=type_text))
 
     return result
 def text_to_text_node(text):

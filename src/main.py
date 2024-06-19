@@ -1,10 +1,23 @@
+from block_markdown import block_to_block_type
 from textnode import *
 from htmlnode import *
 from markdown import *
+from block_markdown import *
 def main():
-    text = "This is **text** with an *italic* word and a `code block` and an ![image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png) and a [link](https://boot.dev)" 
-    nodes = text_to_text_node(text)
-    print_nodes(nodes)
+    markdown = """This is **bolded** paragraph
+
+    This is another paragraph with *italic* text and `code` here
+    This is the same paragraph on a new line
+
+    * This is a list
+    * with items"""
+    blocks = markdown_to_blocks(markdown) 
+    print(blocks)
+    print(len(blocks))
+    print(markdown)
+
+    for b in blocks:
+        print(block_to_block_type(b))
     pass
 def print_nodes(nodes):
     print("[")

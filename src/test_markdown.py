@@ -43,7 +43,9 @@ class TestMarkdownSplit(unittest.TestCase):
             "text",
         )
 
-        self.assertEqual(split_nodes_link([node]),expecting)
+        result = split_nodes_link([node])
+
+        self.assertEqual(result,expecting)
 
         expecting_multiple = [
                 TextNode("Cool link",type_link,url="https://thisisalink.com"),
@@ -113,3 +115,21 @@ class TestMarkdownLink(unittest.TestCase):
         res_img_syntax = extract_markdown_links(text_img_syntax)
         self.assertEqual([],res_img_syntax)
 
+
+class TestTextToTextNode(unittest.TestCase):
+    def test_eq1(self):
+        text = "This is **text** with an *italic* word and a `code block` and an ![image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png) and a [link](https://boot.dev)"
+        expecting = [
+            TextNode("This is ", type_text),
+            TextNode("text", type_bold),
+            TextNode(" with an ", type_text),
+            TextNode("italic",type_italic),
+            TextNode(" word and a ", type_text),
+            TextNode("code block", type_code),
+            TextNode(" and an ", type_text),
+            TextNode("image", type_image, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png"),
+            TextNode(" and a ", type_text),
+            TextNode("link", type_link, "https://boot.dev"),
+        ]
+        result = text_to_text_node(text)
+        self.assertEqual(result,expecting)
