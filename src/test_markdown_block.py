@@ -62,4 +62,47 @@ This is the same paragraph on a new line
         for b in blocks:
             result.append(block_to_block_type(b))
         self.assertEqual(result,expected)
+    def test_quote_blocks(self):
+        blocks = [
+                ">This is a quote\n>about a moat\n>and not a goat",
+                ">Another quote\nBut not this bloke",
+                "Not even trying to be a quote\nNope nope nope",
+                ]
         
+        expected = [block_type_quote,
+                    block_type_paragraph,
+                    block_type_paragraph,
+                    ]
+        result = []
+        for b in blocks:
+            result.append(block_to_block_type(b))
+        self.assertEqual(result,expected)
+    def test_ordered_list(self):
+        blocks = [
+                "1. item 1\n2.item 2\n3. item 3\n4. item 4",
+                "2. doesn't work",
+                "1. item 1\n3. doesn't work",
+                ]
+        expected = [block_type_ordered_list,
+                    block_type_paragraph,
+                    block_type_paragraph,
+                    ]
+        result = []
+        for b in blocks:
+            result.append(block_to_block_type(b))
+        self.assertEqual(result,expected)
+    def test_code_block(self):
+        blocks = [
+                "```This is some code for something```",
+                "```this is\n code \n for something```",
+                "```This does nothing",
+                "``` This is \n good\n```",
+                ]
+        expected = [block_type_code,
+                    block_type_code,
+                    block_type_paragraph,
+                    block_type_code
+                    ]
+        result = []
+        for b in blocks:
+            result.append(block_to_block_type(b))
