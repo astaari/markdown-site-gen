@@ -1,4 +1,7 @@
 from htmlnode import *
+from markdown import text_to_text_node
+from textnode import text_node_to_html_node
+import re
 
 block_type_paragraph = "paragraph"
 block_type_heading = "heading"
@@ -66,14 +69,22 @@ def get_header_html(block):
         count = len(pounds[0])
         if count > 6 or count < 1:
             raise ValueError(f"Header markdown contained more than 6 or less that 1 '#'\n\tline:{l}")
-        elements.append(LeafNode(f"h{count}",pounds[1]))
+        sub_children = []
+        txt_nodes = text_to_text_node(pounds[1])
+        for n in txt_nodes:
+            sub_children.append(text_node_to_html_node(n))
+        elements.append(ParentNode(f"h{count}",children=sub_children))
     return elements
 def get_list_html(block,ordered):
     lines = block.split("\n")
     elements = []
     for l in lines:
         element = l.split(" ",1)[1]
-        elements.append(LeafNode("li",element))
+        sub_children = []
+        txt_nodes = text_to_text_node(element)
+        for n in txt_nodes:
+            sub_children.append(text_node_to_html_node(n))
+        elements.append(ParentNode("li",children=sub_children))
     parent = ParentNode('ol' if ordered else 'ul',children=elements)
     return parent
 def markdown_to_html(markdown):
@@ -83,17 +94,29 @@ def markdown_to_html(markdown):
         block_type = block_to_block_type(b)
         tag = block_html_dict[block_type]
         if block_type==block_type_paragraph:
-            node = LeafNode(tag,b)
+
+            txt_nodes = text_to_text_node(b)
+            sub_children = []
+            for n in txt_nodes:
+                sub_children.append(text_node_to_html_node(n))
+
+            node =ParentNode(tag,children=sub_children)
             children.append(node)
         elif block_type==block_type_heading:
-            children.append(get_header_html(b)) 
+            for child in get_header_html(b):
+                children.append(child) 
         elif block_type==block_type_code:
+            #Leave because it's already formatted
             child = LeafNode(code_element,b.strip('```'))
             parent = ParentNode(tag,children=[child])
             children.append(parent)
         elif block_type == block_type_quote:
-            #TODO use regex to remove >"
-            child = LeafNode(tag,b.replace('\n>','\n'))
+            text = b.replace('\n>','\n')[2:]
+            txt_nodes = text_to_text_node(text)
+            sub_children = []
+            for n in txt_nodes:
+               sub_children.append(text_node_to_html_node(n)) 
+            child = ParentNode(tag,children=sub_children)
             children.append(child)
         elif block_type == block_type_unordered_list:
             children.append(get_list_html(b,False))
