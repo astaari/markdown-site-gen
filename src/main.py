@@ -1,3 +1,4 @@
+from os.path import isfile
 from block_markdown import block_to_block_type, get_header_html, markdown_to_html
 from textnode import *
 from htmlnode import *
@@ -9,12 +10,25 @@ import sys
 import shutil
 def main():
     cpydir("./static","./public")
-    generate_page("./content/index.md","template.html","./public/index.html")
+    generate_page_recursive("./content","template.html","./public")
+    #generate_page("./content/index.md","template.html","./public/index.html")
     pass
 
 
 def generate_page_recursive(dir_path_content,template_path,dest_dir_path):
-    pass
+    if not os.path.exists(dir_path_content):
+        raise Exception(f"{dir_path_content} does not exist")
+    contents = os.listdir(dir_path_content)
+
+    for item in contents:
+        item_full = os.path.join(dir_path_content,item)
+        dest_full = os.path.join(dest_dir_path,item).replace(".md",".html")
+
+        if os.path.isfile(item_full):
+            generate_page(item_full,template_path,dest_full)
+        elif os.path.isdir(item_full):
+            generate_page_recursive(item_full,template_path,dest_full)
+
 
 def extract_title(markdown):
     blocks = markdown_to_blocks(markdown)
